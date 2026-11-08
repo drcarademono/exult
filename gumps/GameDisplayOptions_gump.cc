@@ -176,11 +176,6 @@ public:
 		return get_text_msg(0x5CD - msg_file_start);
 	}
 
-	static auto Smoothmovement_() {
-		const auto* text = get_text_msg(0xB1B - msg_file_start);
-		return text && *text ? text : "Smooth movement:";
-	}
-
 	static auto Skipintro_() {
 		return get_text_msg(0x5CE - msg_file_start);
 	}
@@ -316,10 +311,6 @@ void GameDisplayOptions_gump::build_buttons() {
             this, &GameDisplayOptions_gump::toggle_smooth_scrolling, std::move(smooth_text), smooth_scrolling,
             get_button_pos_for_label(Strings::Smoothscrolling_()), yForRow(++y_index), small_size);
 
-	buttons[id_smooth_movement] = std::make_unique<GameDisplayTextToggle>(
-			this, &GameDisplayOptions_gump::toggle_smooth_movement, yesNo, smooth_movement,
-			get_button_pos_for_label(Strings::Smoothmovement_()), yForRow(++y_index), small_size);
-
 	buttons[id_menu_intro] = std::make_unique<GameDisplayTextToggle>(
 			this, &GameDisplayOptions_gump::toggle_menu_intro, yesNo, menu_intro, get_button_pos_for_label(Strings::Skipintro_()),
 			yForRow(++y_index), small_size);
@@ -359,7 +350,7 @@ void GameDisplayOptions_gump::build_buttons() {
 			yForRow(++y_index), large_size);
 
 	// Leave room for every platform/game-specific row above the action buttons.
-	const int bottom_row = std::max(13, y_index + 1);
+	const int bottom_row = std::max(12, y_index + 1);
 	for (int id : {id_ok, id_help, id_cancel}) {
 		buttons[id]->set_pos(buttons[id]->get_x(), yForRow(bottom_row));
 	}
@@ -396,7 +387,6 @@ void GameDisplayOptions_gump::load_settings() {
 	paperdolls       = sman->are_paperdolls_enabled();
 	text_bg          = gwin->get_text_bg() + 1;
 	smooth_scrolling = gwin->is_lerping_enabled() / 25;
-	smooth_movement  = gwin->is_smooth_actor_movement_enabled();
 
 	android_autolaunch = Android_getAutoLaunch ? Android_getAutoLaunch() : 0;
 	config->value("config/gameplay/language", value, "");
@@ -425,7 +415,7 @@ void GameDisplayOptions_gump::load_settings() {
 }
 
 GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
-	SetProceduralBackground(TileRect(0, 0, 100, yForRow(14)), -1);
+	SetProceduralBackground(TileRect(0, 0, 100, yForRow(13)), -1);
 
 	for (auto& btn : buttons) {
 		btn.reset();
@@ -433,13 +423,13 @@ GameDisplayOptions_gump::GameDisplayOptions_gump() : Modal_gump(nullptr, -1) {
 
 	// Ok
 	buttons[id_ok] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::close, Strings::OK(), 15, yForRow(13), 50);
+			this, &GameDisplayOptions_gump::close, Strings::OK(), 15, yForRow(12), 50);
 	// Help
 	buttons[id_help] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::help, Strings::HELP(), 50, yForRow(13), 50);
+			this, &GameDisplayOptions_gump::help, Strings::HELP(), 50, yForRow(12), 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<GameDisplayOptions_button>(
-			this, &GameDisplayOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(13), 50);
+			this, &GameDisplayOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(12), 50);
 
 	load_settings();
 	build_buttons();
@@ -478,8 +468,6 @@ void GameDisplayOptions_gump::save_settings() {
 	}
 	gwin->set_lerping_enabled(smooth_scrolling * 25);
 	config->set("config/gameplay/smooth_scrolling", smooth_scrolling * 25, false);
-	gwin->set_smooth_actor_movement(smooth_movement);
-	config->set("config/gameplay/smooth_actor_movement", smooth_movement ? "yes" : "no", false);
 	config->set("config/gameplay/skip_intro", usecode_intro ? "yes" : "no", false);
 	config->set("config/gameplay/extended_intro", extended_intro ? "yes" : "no", false);
 	gwin->set_extended_intro(extended_intro);
@@ -528,7 +516,6 @@ void GameDisplayOptions_gump::paint() {
 	font->paint_text(iwin->get_ib8(), Strings::Hidemissingitems_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::TextBackground_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::Smoothscrolling_(), x + label_margin, y + yForRow(++y_index) + 1);
-	font->paint_text(iwin->get_ib8(), Strings::Smoothmovement_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::Skipintro_(), x + label_margin, y + yForRow(++y_index) + 1);
 	if (buttons[id_usecode_intro]) {
 		font->paint_text(iwin->get_ib8(), Strings::Skipscriptedfirstscene_(), x + label_margin, y + yForRow(++y_index) + 1);

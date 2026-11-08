@@ -33,6 +33,7 @@ private:
 	int                      gumps_pause;
 	bool                     alternate_drop;
 	int                      frames;
+	bool                     smooth_movement;
 	std::vector<std::string> frametext;
 	int                      difficulty;
 	int                      show_hits;
@@ -52,6 +53,7 @@ private:
 		id_gumps_pause,
 		id_alternate_drop,
 		id_frames,
+		id_smooth_movement,
 		id_show_hits,
 		id_mode,
 		id_charmDiff,
@@ -91,6 +93,10 @@ public:
 
 	void toggle_alternate_drop(int state) {
 		alternate_drop = state;
+	}
+
+	void toggle_smooth_movement(int state) {
+		smooth_movement = state != 0;
 	}
 
 	void toggle_frames(int state) {
