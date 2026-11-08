@@ -22,6 +22,7 @@
 #ifndef INCL_ACTORS
 #define INCL_ACTORS
 
+#include "actor_movement.h"
 #include "contain.h"
 #include "flags.h"
 #include "ignore_unused_variable_warning.h"
@@ -52,6 +53,9 @@ class Actor_attributes;
 class Actor : public Container_game_object, public Time_sensitive {
 	static Game_object_shared editing;    // NPC being edited by ExultStudio.
 protected:
+	Actor_movement movement;
+	unsigned       movement_generation = 0;
+
 	std::string name;                // Its name.
 	int         usecode;             // # of usecode function.
 	bool        usecode_assigned;    // Usecode # explicitly assigned.
@@ -362,6 +366,8 @@ public:
 		return schedule.get();
 	}
 
+	void get_movement_offset(int& x, int& y) const;
+
 	int get_frame_time() const {    // Return frame time if moving.
 		return frame_time;
 	}
@@ -403,6 +409,7 @@ public:
 	}
 
 	void move(int newtx, int newty, int newlift, int newmap = -1) override {
+		movement.reset();
 		Ireg_game_object::move(newtx, newty, newlift, newmap);
 		if (!this->is_pos_invalid()) {
 			// Position is valid so mark us as not unused

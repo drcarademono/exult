@@ -34,6 +34,7 @@ EXULTSOURCES =	\
 	actorio.cc	\
 	actors.cc	\
 	actors.h	\
+	actor_movement.h \
 	args.cc		\
 	args.h		\
 	browser.cc	\
@@ -367,3 +368,7 @@ install-exec-local:
 clean-local:
 
 endif
+
+check_PROGRAMS = test_actor_movement
+TESTS = $(check_PROGRAMS)
+test_actor_movement_SOURCES = tests/test_actor_movement.cc actor_movement.h

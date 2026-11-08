@@ -1501,8 +1501,11 @@ static void Handle_events() {
 				didlerp = true;
 			}
 		}
-		if (!lerp || !didlerp) {       // No lerping
-			if (gwin->is_dirty()) {    // Note the ending else in the above #if!
+		const bool actor_repaint = gwin->update_actor_movement();
+		if (!lerp || !didlerp) {    // No camera lerping
+			if (actor_repaint) {
+				gwin->paint();
+			} else if (gwin->is_dirty()) {    // Note the ending else in the above #if!
 				gwin->paint_dirty();
 			}
 			// Reset it for lerping.

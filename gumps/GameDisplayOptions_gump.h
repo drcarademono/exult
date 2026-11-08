@@ -36,6 +36,7 @@ private:
 	std::vector<std::string> sc_outline_txt;
 	int                      text_bg;
 	int                      smooth_scrolling;
+	bool                     smooth_movement;
 	bool                     usecode_intro;
 	bool                     extended_intro;
 	bool                     menu_intro;
@@ -55,6 +56,7 @@ private:
 		id_sb_hide_missing,
 		id_text_bg,
 		id_smooth_scrolling,
+		id_smooth_movement,
 		id_menu_intro,
 		id_usecode_intro,
 		id_extended_intro,
@@ -108,6 +110,10 @@ public:
 
 	void toggle_text_bg(int state) {
 		text_bg = state;
+	}
+
+	void toggle_smooth_movement(int state) {
+		smooth_movement = state != 0;
 	}
 
 	void toggle_smooth_scrolling(int state) {

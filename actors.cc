@@ -912,6 +912,7 @@ Game_object* Actor::find_blocking(const Tile_coord& tile, int dir) {
  *  @param new_lift The new z coordinate.
  */
 inline void Actor::movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx, int new_sy, int new_frame, int new_lift) {
+	const Tile_coord         old_tile = get_tile();
 	const Game_object_shared keep = shared_from_this();
 	if (old_chunk) {    // Remove from current chunk.
 		old_chunk->remove(this);
@@ -924,6 +925,34 @@ inline void Actor::movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx,
 		set_lift(new_lift);
 	}
 	new_chunk->add(this);
+	if (!gwin->is_smooth_actor_movement_enabled() || !old_chunk || old_chunk->get_map() != new_chunk->get_map()
+		|| this == gwin->get_camera_actor() || frame_time <= 0) {
+		movement.reset();
+		return;
+	}
+	const auto tile = get_tile();
+	const int  dx   = Actor_movement::tile_delta(old_tile.tx, tile.tx, c_num_tiles);
+	const int  dy   = Actor_movement::tile_delta(old_tile.ty, tile.ty, c_num_tiles);
+	const int  dz   = old_tile.tz - tile.tz;
+	if (std::abs(dx) > 1 || std::abs(dy) > 1 || std::abs(dz) > 4) {
+		movement.reset();    // Scripted jumps and teleports must not glide.
+	} else if (dx || dy || dz) {
+		if (movement_generation != gwin->get_actor_movement_generation()) {
+			movement.reset();
+		}
+		movement_generation = gwin->get_actor_movement_generation();
+		movement.start(dx * c_tilesize - dz * 4, dy * c_tilesize - dz * 4, Game::get_ticks(), frame_time);
+		if (!dormant) {
+			gwin->note_actor_movement(frame_time);
+		}
+	}
+}
+
+void Actor::get_movement_offset(int& x, int& y) const {
+	x = y = 0;
+	if (gwin->is_smooth_actor_movement_enabled() && movement_generation == gwin->get_actor_movement_generation()) {
+		movement.offset(Game::get_ticks(), x, y);
+	}
 }
 
 /**

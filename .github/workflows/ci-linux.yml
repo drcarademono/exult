@@ -127,6 +127,8 @@ jobs:
             CXX=${OVERRIDE_CXX} CC=${OVERRIDE_CC}
       - name: Build
         run: make -j 2
+      - name: Actor movement interpolation
+        run: make check-am
       - name: CPU and Vulkan scaler conformance
         env:
           CXX: ${{ matrix.cxx }}

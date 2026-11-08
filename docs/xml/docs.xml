@@ -582,6 +582,8 @@
 					<li><strong>Smooth scrolling</strong><br/>
 						Disabled/25%/50%/75%/100% percentage of how smooth the game scrolls when the avatar
 						moves. When disabled <Exult/> uses the 'jerky' scrolling of the original game.</li>
+					<li><strong>Smooth movement</strong><br/>
+						Smooths NPC and monster movement between tiles independently of smooth scrolling.</li>
 					<li><strong>Skip intro</strong><br/>
 						When enabled you don't have to watch the splash screen and intro when you select a game
 						from the <Exult/> menu.</li>
@@ -2186,6 +2188,10 @@
 							<comment>**0/25/50/75/100 percentage of how smooth the game scrolls when the avatar </comment>
 							<comment>moves. 0 disables smooth scrolling and uses the "jerky" scrolling of the </comment>
 							<comment>original game.</comment>
+							</configtag>
+							<configtag name="smooth_actor_movement">
+							no
+							<comment>**yes smooths NPC and monster movement between tiles.</comment>
 							</configtag>
 							<configtag name="skip_intro">
 							no
