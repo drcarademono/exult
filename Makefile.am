@@ -370,5 +370,7 @@ clean-local:
 endif
 
 check_PROGRAMS = test_actor_movement
-TESTS = $(check_PROGRAMS)
-test_actor_movement_SOURCES = tests/test_actor_movement.cc actor_movement.h
+test_actor_movement_SOURCES = actor_movement_test.cc actor_movement.h
+
+check-local: test_actor_movement$(EXEEXT)
+	./test_actor_movement$(EXEEXT)
