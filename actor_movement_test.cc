@@ -39,8 +39,21 @@ int main() {
 	expect(move, 0, -4, -4);
 	expect(move, 50, 0, 0);
 	if (Actor_movement::tile_delta(3071, 0, 3072) != -1 || Actor_movement::tile_delta(0, 3071, 3072) != 1
-		|| Actor_movement::tile_delta(10, 11, 3072) != -1) {
+		|| Actor_movement::tile_delta(10, 11, 3072) != -1
+		|| Actor_movement::tile_delta(0, 3070, 3072) != 2) {
 		return 1;
 	}
+	// Patrol pacing has frame_time == 0; formation followers also lack
+	// their own action and can cover two tiles per avatar step.
+	if (Actor_movement::step_duration(0, 0, 200) != 200 || Actor_movement::step_duration(0, 80, 200) != 80
+		|| Actor_movement::step_duration(120, 80, 200) != 120 || Actor_movement::step_duration(0, 0, 0) != 1
+		|| !Actor_movement::is_step(0, -1, 0, false) || !Actor_movement::is_step(2, -2, 1, true)
+		|| Actor_movement::is_step(2, 0, 0, false) || Actor_movement::is_step(3, 0, 0, true)
+		|| Actor_movement::is_step(0, 0, 5, true)) {
+		return 1;
+	}
+	move.start(-16, 16, 1000, Actor_movement::step_duration(0, 80, 200));
+	expect(move, 1040, -8, 8);
+	expect(move, 1080, 0, 0);
 	std::cout << "Actor movement interpolation: timing, continuity, reset and world/clock wrapping passed\n";
 }

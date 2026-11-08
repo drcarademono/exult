@@ -33,6 +33,17 @@ public:
 		duration = ms;
 	}
 
+	// Pacing and formation steps need not have a walking action/frame timer.
+	static uint32_t step_duration(int own, int leader, int standard) {
+		const int ms = own > 0 ? own : leader > 0 ? leader : standard;
+		return ms > 0 ? uint32_t(ms) : 1;
+	}
+
+	static bool is_step(int dx, int dy, int dz, bool party) {
+		const int limit = party ? 2 : 1;    // Formation followers can catch up two tiles.
+		return dx >= -limit && dx <= limit && dy >= -limit && dy <= limit && dz >= -4 && dz <= 4;
+	}
+
 	static int tile_delta(int from, int to, int world_size) {
 		int delta = from - to;
 		if (delta > world_size / 2) {

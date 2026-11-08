@@ -926,7 +926,7 @@ inline void Actor::movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx,
 	}
 	new_chunk->add(this);
 	if (!gwin->is_smooth_actor_movement_enabled() || !old_chunk || old_chunk->get_map() != new_chunk->get_map()
-		|| this == gwin->get_camera_actor() || frame_time <= 0) {
+		|| this == gwin->get_camera_actor()) {
 		movement.reset();
 		return;
 	}
@@ -934,16 +934,19 @@ inline void Actor::movef(Map_chunk* old_chunk, Map_chunk* new_chunk, int new_sx,
 	const int  dx   = Actor_movement::tile_delta(old_tile.tx, tile.tx, c_num_tiles);
 	const int  dy   = Actor_movement::tile_delta(old_tile.ty, tile.ty, c_num_tiles);
 	const int  dz   = old_tile.tz - tile.tz;
-	if (std::abs(dx) > 1 || std::abs(dy) > 1 || std::abs(dz) > 4) {
+	if (!Actor_movement::is_step(dx, dy, dz, is_in_party())) {
 		movement.reset();    // Scripted jumps and teleports must not glide.
 	} else if (dx || dy || dz) {
 		if (movement_generation != gwin->get_actor_movement_generation()) {
 			movement.reset();
 		}
 		movement_generation = gwin->get_actor_movement_generation();
-		movement.start(dx * c_tilesize - dz * 4, dy * c_tilesize - dz * 4, Game::get_ticks(), frame_time);
-		if (!dormant) {
-			gwin->note_actor_movement(frame_time);
+		const auto*  leader = is_in_party() ? gwin->get_main_actor() : nullptr;
+		const uint32 duration
+				= Actor_movement::step_duration(frame_time, leader ? leader->get_frame_time() : 0, gwin->get_std_delay());
+		movement.start(dx * c_tilesize - dz * 4, dy * c_tilesize - dz * 4, Game::get_ticks(), duration);
+		if (!dormant || is_in_party()) {
+			gwin->note_actor_movement(duration);
 		}
 	}
 }
