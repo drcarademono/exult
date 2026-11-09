@@ -126,6 +126,7 @@ autom4te*.cache
 autoscan.log
 autoscan-*.log
 depcomp
+/test_actor_movement
 aclocal.m4
 compile
 confdefs.h

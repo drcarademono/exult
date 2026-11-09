@@ -520,6 +520,8 @@
 					<li><strong>Speed</strong><br/>
 						if <Exult/> seems too fast lower this setting. If it seems to sluggish raising
 						this setting may help.</li>
+					<li><strong>Smooth movement</strong><br/>
+						Smooths NPC and monster movement between tiles independently of smooth scrolling.</li>
 					<li><strong>Combat options</strong><br/>
 						As many people think that the U7 combat engine is far too easy, too hard or
 						just can't stand the real-time-combat we put in some options to make combat more
@@ -2186,6 +2188,10 @@
 							<comment>**0/25/50/75/100 percentage of how smooth the game scrolls when the avatar </comment>
 							<comment>moves. 0 disables smooth scrolling and uses the "jerky" scrolling of the </comment>
 							<comment>original game.</comment>
+							</configtag>
+							<configtag name="smooth_actor_movement">
+							no
+							<comment>**yes smooths NPC and monster movement between tiles.</comment>
 							</configtag>
 							<configtag name="skip_intro">
 							no

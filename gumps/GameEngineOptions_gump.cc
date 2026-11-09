@@ -115,6 +115,11 @@ namespace {
 			return get_text_msg(0x62D - msg_file_start);
 		}
 
+		static auto Smoothmovement_() {
+			const auto* text = get_text_msg(0xB1B - msg_file_start);
+			return text && *text ? text : "Smooth movement:";
+		}
+
 		static auto CombatShowHits_() {
 			return get_text_msg(0x62E - msg_file_start);
 		}
@@ -205,6 +210,10 @@ void GameEngineOptions_gump::build_buttons() {
 			this, &GameEngineOptions_gump::toggle_frames, frametext, frames, get_button_pos_for_label(Strings::Speed_()),
 			yForRow(++y_index), small_size);
 
+	buttons[id_smooth_movement] = std::make_unique<GameEngineTextToggle>(
+			this, &GameEngineOptions_gump::toggle_smooth_movement, yesNo, smooth_movement,
+			get_button_pos_for_label(Strings::Smoothmovement_()), yForRow(++y_index), small_size);
+
 	buttons[id_show_hits] = std::make_unique<GameEngineTextToggle>(
 			this, &GameEngineOptions_gump::toggle_show_hits, yesNo, show_hits, get_button_pos_for_label(Strings::CombatShowHits_()),
 			yForRow(++y_index), small_size);
@@ -277,6 +286,7 @@ void GameEngineOptions_gump::load_settings() {
 	allow_autonotes       = gwin->get_allow_autonotes();
 	enhancements          = gwin->get_allow_enhancements();
 	gumps_pause           = !gumpman->gumps_dont_pause_game();
+	smooth_movement       = gwin->is_smooth_actor_movement_enabled();
 	frames                = -1;
 	size_t num_framerates = num_default_rates;
 	frametext.clear();
@@ -299,17 +309,17 @@ void GameEngineOptions_gump::load_settings() {
 }
 
 GameEngineOptions_gump::GameEngineOptions_gump() : Modal_gump(nullptr, -1) {
-	SetProceduralBackground(TileRect(0, 0, 100, yForRow(13)), -1);
+	SetProceduralBackground(TileRect(0, 0, 100, yForRow(14)), -1);
 
 	// Ok
 	buttons[id_ok]
-			= std::make_unique<GameEngineOptions_button>(this, &GameEngineOptions_gump::close, Strings::OK(), 25, yForRow(12), 50);
+			= std::make_unique<GameEngineOptions_button>(this, &GameEngineOptions_gump::close, Strings::OK(), 25, yForRow(13), 50);
 	// Help
 	buttons[id_help]
-			= std::make_unique<GameEngineOptions_button>(this, &GameEngineOptions_gump::help, Strings::HELP(), 50, yForRow(12), 50);
+			= std::make_unique<GameEngineOptions_button>(this, &GameEngineOptions_gump::help, Strings::HELP(), 50, yForRow(13), 50);
 	// Cancel
 	buttons[id_cancel] = std::make_unique<GameEngineOptions_button>(
-			this, &GameEngineOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(12), 50);
+			this, &GameEngineOptions_gump::cancel, Strings::CANCEL(), 75, yForRow(13), 50);
 
 	load_settings();
 	build_buttons();
@@ -339,6 +349,8 @@ void GameEngineOptions_gump::save_settings() {
 	cheat.SetFoodUse(Cheat::FoodUse(feeding), false);
 	gumpman->set_gumps_dont_pause_game(!gumps_pause);
 	config->set("config/gameplay/gumps_dont_pause_game", gumps_pause ? "no" : "yes", false);
+	gwin->set_smooth_actor_movement(smooth_movement);
+	config->set("config/gameplay/smooth_actor_movement", smooth_movement ? "yes" : "no", false);
 	config->write_back();
 }
 
@@ -355,6 +367,7 @@ void GameEngineOptions_gump::paint() {
 	font->paint_text(iwin->get_ib8(), Strings::Gumpspausegame_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::Alternativedraganddrop_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::Speed_(), x + label_margin, y + yForRow(++y_index) + 1);
+	font->paint_text(iwin->get_ib8(), Strings::Smoothmovement_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::CombatShowHits_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::CombatpausedwithSpace_(), x + label_margin, y + yForRow(++y_index) + 1);
 	font->paint_text(iwin->get_ib8(), Strings::CombatCharmedDifficulty_(), x + label_margin, y + yForRow(++y_index) + 1);

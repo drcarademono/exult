@@ -386,6 +386,9 @@ Game_window::Game_window(
 
 	config->value("config/gameplay/smooth_scrolling", lerping_enabled, 0);
 	config->set("config/gameplay/smooth_scrolling", lerping_enabled, false);
+	config->value("config/gameplay/smooth_actor_movement", str, "no");
+	smooth_actor_movement = str == "yes";
+	config->set("config/gameplay/smooth_actor_movement", smooth_actor_movement ? "yes" : "no", false);
 	config->value("config/gameplay/alternate_drop", str, "no");
 	alternate_drop = str == "yes";
 	config->set("config/gameplay/alternate_drop", alternate_drop ? "yes" : "no", false);
@@ -1238,6 +1241,11 @@ TileRect Game_window::get_shape_rect(const Game_object* obj) const {
 #endif
 		return TileRect(0, 0, 0, 0);
 	}
+	if (smooth_actor_movement && obj->as_actor()) {
+		int x, y;
+		get_shape_location(obj, x, y);
+		return get_shape_rect(s, x, y);
+	}
 	Tile_coord t      = obj->get_tile();    // Get tile coords.
 	const int  lftpix = (c_tilesize * t.tz) / 2;
 	t.tx += 1 - get_scrolltx();
@@ -1275,7 +1283,7 @@ inline void Get_shape_location(Tile_coord t, int scrolltx, int scrollty, int& x,
  *  Get screen loc. of object which MUST be on the map (no owner).
  */
 
-void Game_window::get_shape_location(const Game_object* obj, int& x, int& y) {
+void Game_window::get_shape_location(const Game_object* obj, int& x, int& y) const {
 	const Tile_coord t = obj->get_tile();
 	Get_shape_location(t, scrolltx, scrollty, x, y);
 	bool apply_avpos = false;
@@ -1290,7 +1298,7 @@ void Game_window::get_shape_location(const Game_object* obj, int& x, int& y) {
 		const Actor* actor = obj->as_actor();
 		if (obj == get_camera_actor()) {
 			apply_avpos = true;
-		} else if (actor && actor->is_in_party() && lerping_enabled) {
+		} else if (actor && actor->is_in_party() && lerping_enabled && !smooth_actor_movement) {
 			// Apply the same lerping offset to party members
 			apply_avpos = true;
 		} else if (landing_barge && lerping_enabled && landing_barge->is_grouped_member(obj)) {
@@ -1301,6 +1309,14 @@ void Game_window::get_shape_location(const Game_object* obj, int& x, int& y) {
 	if (apply_avpos) {
 		x += avposx_ld;
 		y += avposy_ld;
+	}
+	if (smooth_actor_movement && !apply_avpos) {
+		if (const auto* actor = obj->as_actor()) {
+			int dx, dy;
+			actor->get_movement_offset(dx, dy);
+			x += dx;
+			y += dy;
+		}
 	}
 	x -= scrolltx_lo;
 	y -= scrollty_lo;
@@ -3296,4 +3312,32 @@ void Game_window::set_shortcutbar(uint8 s) {
 			g_shortcutBar = nullptr;
 		}
 	}
+}
+
+void Game_window::set_smooth_actor_movement(bool enabled) {
+	if (smooth_actor_movement != enabled) {
+		smooth_actor_movement = enabled;
+		++actor_movement_generation;
+		actor_movement_pending = false;
+		set_all_dirty();
+	}
+}
+
+void Game_window::note_actor_movement(uint32 duration) {
+	const uint32 now = Game::get_ticks();
+	if (!actor_movement_pending || static_cast<std::int32_t>(actor_movement_until - now) <= 0 || duration > actor_movement_until - now) {
+		actor_movement_until = now + duration;
+		actor_movement_pending = true;
+	}
+}
+
+bool Game_window::update_actor_movement() {
+	if (!smooth_actor_movement || !actor_movement_pending) {
+		return false;
+	}
+	if (static_cast<std::int32_t>(actor_movement_until - Game::get_ticks()) <= 0) {
+		actor_movement_pending = false;
+	}
+	// Include one final repaint at the exact destination after expiry.
+	return true;
 }

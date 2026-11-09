@@ -805,7 +805,7 @@ public:
 	void center_view(const Tile_coord& t);    // Center view around t.
 	void set_camera_actor(Actor* a);
 
-	Actor* get_camera_actor() {
+	Actor* get_camera_actor() const {
 		return camera_actor;
 	}
 
@@ -831,7 +831,7 @@ public:
 	// Get screen area used by object.
 	TileRect get_shape_rect(const Game_object* obj) const;
 	// Get screen loc. of object.
-	void get_shape_location(const Game_object* obj, int& x, int& y);
+	void get_shape_location(const Game_object* obj, int& x, int& y) const;
 	void get_shape_location(const Tile_coord& t, int& x, int& y);
 	void plasma(int w, int h, int x, int y, int startc, int endc);
 	/*
@@ -981,11 +981,27 @@ private:
 	// Delta for camera actor position in pixels due to lerping of position
 	int avposx_ld, avposy_ld;
 	// Is lerping enabled
-	int lerping_enabled;
+	int      lerping_enabled;
+	bool     smooth_actor_movement     = false;
+	bool actor_movement_pending = false;
+	uint32   actor_movement_until      = 0;
+	unsigned actor_movement_generation = 0;
 
 public:
 	// Reset (well update really) saved lerp scroll positions
 	void lerp_reset();
+
+	bool is_smooth_actor_movement_enabled() const {
+		return smooth_actor_movement;
+	}
+
+	unsigned get_actor_movement_generation() const {
+		return actor_movement_generation;
+	}
+
+	void set_smooth_actor_movement(bool enabled);
+	void note_actor_movement(uint32 duration);
+	bool update_actor_movement();
 
 	// (Re)paint the entire screen using a lerp factor 0-0x10000
 	void paint_lerped(int factor);

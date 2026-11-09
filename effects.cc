@@ -1019,10 +1019,15 @@ TileRect Text_effect::Figure_text_pos() {
 			if (!outer->get_chunk()) {
 				return pos;
 			}
-			TileRect r = gwin->get_shape_rect(outer);
-			r.x -= gwin->get_scrolltx_lo();
-			r.y -= gwin->get_scrollty_lo();
-			return r;
+			Shape_frame* shape = outer->get_shape();
+			if (!shape) {
+				return TileRect(0, 0, 0, 0);
+			}
+			// Use the same screen anchor as the object's paint method, with
+			// camera and actor interpolation each applied exactly once.
+			int x, y;
+			gwin->get_shape_location(outer, x, y);
+			return gwin->get_shape_rect(shape, x, y);
 		}
 	} else {
 		int x;
@@ -1152,7 +1157,8 @@ void Text_effect::free_layer() {
 void Text_effect::paint() {
 	const char* ptr = msg.c_str();
 	const int   len = strlen(ptr);
-	sman->paint_text(0, ptr, len, pos.x, pos.y);
+	const auto  anchor = Figure_text_pos();
+	sman->paint_text(0, ptr, len, anchor.x, anchor.y);
 }
 
 /**
@@ -1205,7 +1211,10 @@ void Text_effect::paint_to_layer() {
 	const float f = iwin->get_ui_scale_factor(Image_window::UiLayerTextEffects);
 	int         csx;
 	int         csy;
-	iwin->game_to_screen(pos.x + w / 2, pos.y + h / 2, false, csx, csy);
+	// Resolve the anchor during this paint, while camera interpolation is
+	// applied, rather than reusing a position cached by the time queue.
+	const auto anchor = Figure_text_pos();
+	iwin->game_to_screen(anchor.x + w / 2, anchor.y + h / 2, false, csx, csy);
 	const float dw = static_cast<float>(w) * f;
 	const float dh = static_cast<float>(h) * f;
 	const int   dx = static_cast<int>(static_cast<float>(csx) - dw / 2.0f);

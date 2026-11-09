@@ -349,6 +349,13 @@ void GameDisplayOptions_gump::build_buttons() {
 			this, &GameDisplayOptions_gump::toggle_fonts, fonts_txt, fonts, get_button_pos_for_label(Strings::Fonts_()),
 			yForRow(++y_index), large_size);
 
+	// Leave room for every platform/game-specific row above the action buttons.
+	const int bottom_row = std::max(12, y_index + 1);
+	for (int id : {id_ok, id_help, id_cancel}) {
+		buttons[id]->set_pos(buttons[id]->get_x(), yForRow(bottom_row));
+	}
+	SetProceduralBackground(TileRect(0, 0, 100, yForRow(bottom_row + 1)), -1);
+
 	// Risize to fit all
 	ResizeWidthToFitWidgets(tcb::span(buttons.data() + id_first, id_count));
 

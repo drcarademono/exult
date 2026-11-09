@@ -1501,7 +1501,13 @@ static void Handle_events() {
 				didlerp = true;
 			}
 		}
-		if (!lerp || !didlerp) {       // No lerping
+		const bool actor_repaint = gwin->update_actor_movement();
+		if (!lerp || !didlerp) {    // No camera lerping
+			if (actor_repaint) {
+				// Interpolation only redraws the current view. paint() also
+				// loads map data; keep that work on the existing movement paths.
+				gwin->set_all_dirty();
+			}
 			if (gwin->is_dirty()) {    // Note the ending else in the above #if!
 				gwin->paint_dirty();
 			}
